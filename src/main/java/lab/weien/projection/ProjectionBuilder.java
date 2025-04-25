@@ -9,6 +9,7 @@ import java.util.Set;
 
 @Slf4j
 public class ProjectionBuilder {
+    private static final Object lock = new Object();
     private final Set<ProjectionFactory.Field> fields = new HashSet<>();
 
     public ProjectionBuilder addField(String fieldName, Class<?> type) {
@@ -43,21 +44,29 @@ public class ProjectionBuilder {
         return this;
     }
 
-    public Class<?> build() {
-        String hash = ProjectionManager.toHash(fields);
-        Class<?> res = ProjectionManager.get(hash);
-        if (res == null) {
-            log.info("Creating projection interface.\nFields: {}", this);
-            res = ProjectionFactory.create(fields.stream().toList(), hash);
-            ProjectionManager.register(hash, res);
-            log.info("Projection interface created: {}", res.getName());
-        }
-        return res;
-    }
-
     private void replaceField(ProjectionFactory.Field field) {
         fields.remove(field);
         fields.add(field);
+    }
+
+    public Class<?> build() {
+        String hash = ProjectionManager.toHash(fields);
+        Class<?> res = ProjectionManager.get(hash);
+        if (res == null) res = generateProjectionWithLock(hash, this);
+        return res;
+    }
+
+    private static Class<?> generateProjectionWithLock(String hash, ProjectionBuilder builder) {
+        synchronized (lock) {
+            Class<?> res = ProjectionManager.get(hash);
+            if (res != null) return res;
+
+            log.info("Creating projection interface.\nFields: {}", builder);
+            res = ProjectionFactory.create(builder.fields.stream().toList(), hash);
+            ProjectionManager.register(hash, res);
+            log.info("Projection interface created: {}", res.getName());
+            return res;
+        }
     }
 
     @Override
