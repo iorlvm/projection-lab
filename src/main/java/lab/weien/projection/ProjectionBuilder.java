@@ -8,23 +8,23 @@ import java.util.Set;
 public class ProjectionBuilder {
     private final Set<ProjectionFactory.Field> fields = new HashSet<>();
 
-    public ProjectionBuilder addField(String name, Class<?> type) {
-        fields.add(new ProjectionFactory.Field(name, type, null, null));
+    public ProjectionBuilder addField(String fieldName, Class<?> type) {
+        fields.add(new ProjectionFactory.Field(fieldName, type, null, null));
         return this;
     }
 
-    public ProjectionBuilder addField(String name, Class<?> type, String valueExpression) {
-        fields.add(new ProjectionFactory.Field(name, type, null, valueExpression));
+    public ProjectionBuilder addField(String fieldName, Class<?> type, String valueExpression) {
+        fields.add(new ProjectionFactory.Field(fieldName, type, null, valueExpression));
         return this;
     }
 
-    public ProjectionBuilder addNestedField(String name, Class<?> nestedType) {
-        fields.add(new ProjectionFactory.Field(name, null, nestedType, null));
+    public ProjectionBuilder addNestedField(String fieldName, Class<?> nestedType) {
+        fields.add(new ProjectionFactory.Field(fieldName, null, nestedType, null));
         return this;
     }
 
-    public ProjectionBuilder addNestedField(String name, Class<?> nestedType, String valueExpression) {
-        fields.add(new ProjectionFactory.Field(name, List.class, nestedType, valueExpression));
+    public ProjectionBuilder addNestedField(String fieldName, Class<?> nestedType, String valueExpression) {
+        fields.add(new ProjectionFactory.Field(fieldName, List.class, nestedType, valueExpression));
         return this;
     }
 
