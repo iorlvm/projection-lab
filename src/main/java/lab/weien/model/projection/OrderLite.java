@@ -1,7 +1,6 @@
 package lab.weien.model.projection;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lab.weien.model.core.Identifiable;
 
 import java.util.List;
 
@@ -18,7 +17,7 @@ import java.util.List;
  *   - 需要額外定義多個介面（如 ProductLite）
  *   - 程式碼較為冗長
  */
-public interface OrderLite extends Identifiable<String> {
+public interface OrderLite {
     String getId();
     String getUserId();
     List<OrderItemLite> getItems();

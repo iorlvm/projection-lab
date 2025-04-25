@@ -1,6 +1,5 @@
 package lab.weien.model.projection;
 
-import lab.weien.model.core.Identifiable;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
@@ -24,7 +23,7 @@ import java.util.List;
  * - 可以在注解中使用 SpEL 表達式進行運算
  * - 直接指定要獲取的屬性
  */
-public interface OrderLiteUseValue extends Identifiable<String> {
+public interface OrderLiteUseValue {
     String getId();
     String getUserId();
     List<OrderItemLite> getItems();
