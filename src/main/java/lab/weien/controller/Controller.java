@@ -1,7 +1,6 @@
 package lab.weien.controller;
 
-import lab.weien.model.core.Identifiable;
-import lab.weien.model.projection.OrderLite;
+import lab.weien.factory.ProjectionFactory;
 import lab.weien.repo.OrderRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,9 +16,18 @@ public class Controller {
     private OrderRepo orderRepo;
 
     @GetMapping("/test")
-    public List<? extends Identifiable<String>> test() {
+    public List<?> test() {
+        List<ProjectionFactory.Field> fields = List.of(
+                new ProjectionFactory.Field("id", String.class),
+                new ProjectionFactory.Field("userId", String.class),
+                new ProjectionFactory.Field("items", List.class)
+        );
+
+        Class<?> aClass = ProjectionFactory.create(fields);
+        return orderRepo.findAllBy(aClass);
+
         // return orderRepo.findAllBy(OrderEntity.class);
-        return orderRepo.findAllBy(OrderLite.class);
+        // return orderRepo.findAllBy(OrderLite.class);
         // return orderRepo.findAllBy(OrderLiteUseValue.class);
     }
 }
