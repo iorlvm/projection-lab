@@ -19,17 +19,17 @@ public class Controller {
 
     @GetMapping("/test")
     public List<?> test() {
-        Class<?> projectionClass = new ProjectionBuilder()
-                .fromEntity(OrderEntity.class, "id", "userId")
-                .addNestedField("items",
-                        new ProjectionBuilder()
-                                .fromEntity(OrderItemEntity.class, "count")
-                                .addField("name", String.class, "target.product.name")
-                                .addField("price", Long.class, "target.product.price")
-                                .addField("totalPrice", Long.class, "target.product.price * target.count")
-                )
+        Class<?> itemProjection = new ProjectionBuilder()
+                .fromEntity(OrderItemEntity.class, "count")
+                .addField("name", String.class, "target.product.name")
+                .addField("price", Long.class, "target.product.price")
+                .addField("totalPrice", Long.class, "target.product.price * target.count")
                 .build();
-        return orderRepo.findAllBy(projectionClass);
+        Class<?> orderProjection = new ProjectionBuilder()
+                .fromEntity(OrderEntity.class, "id", "userId")
+                .addNestedField("orderList", itemProjection, "target.items")
+                .build();
+        return orderRepo.findAllBy(orderProjection);
 
         // return orderRepo.findAllBy(OrderEntity.class);
         // return orderRepo.findAllBy(OrderLite.class);
