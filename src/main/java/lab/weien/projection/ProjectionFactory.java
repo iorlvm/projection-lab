@@ -14,7 +14,7 @@ import java.util.Objects;
 public class ProjectionFactory {
     public static Class<?> create(List<Field> fields, String hash) {
         try {
-            String dynamicInterfaceName = "lab.weien.dynamic.projection.$DynamicProjection" + hash;
+            String dynamicInterfaceName = "lab.weien.projection.dynamic.$D" + hash;
 
             ByteBuddy byteBuddy = new ByteBuddy();
             DynamicType.Builder<?> builder = byteBuddy
@@ -69,7 +69,8 @@ public class ProjectionFactory {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
-    public record Field(String name, Class<?> clazz, Class<?> nestedClazz, String valueExpression) {
+    public record Field(String name, Class<?> clazz, Class<?> nestedClazz,
+                        String valueExpression) implements Comparable<Field> {
         @Override
         public String valueExpression() {
             return valueExpression != null ? valueExpression : ("target." + name);
@@ -85,6 +86,15 @@ public class ProjectionFactory {
             if (this == obj) return true;
             if (!(obj instanceof Field other)) return false;
             return Objects.equals(this.name(), other.name());
+        }
+
+        @Override
+        public int compareTo(Field other) {
+            if (other == null) return 1;
+            if (this == other) return 0;
+            String otherStr = other.toString();
+            String thisStr = this.toString();
+            return thisStr.compareTo(otherStr);
         }
     }
 }
