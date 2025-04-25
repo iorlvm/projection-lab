@@ -1,13 +1,15 @@
 package lab.weien.model.entity;
 
 import jakarta.persistence.*;
-import lab.weien.model.core.Identifiable;
+import lab.weien.model.core.BaseEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "products")
-public class ProductEntity implements Identifiable<Long> {
+public class ProductEntity extends BaseEntity<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "product_id")

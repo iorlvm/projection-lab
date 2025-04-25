@@ -2,17 +2,20 @@ package lab.weien.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lab.weien.model.core.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @IdClass(OrderItemEntity.OrderItemId.class)
 @Table(name = "order_items")
-public class OrderItemEntity {
+public class OrderItemEntity extends BaseEntity<OrderItemEntity.OrderItemId> {
     @Id
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
@@ -26,6 +29,12 @@ public class OrderItemEntity {
 
     @Column(name = "count")
     private Integer count;
+
+    @Override
+    public OrderItemId getId() {
+        if (order == null || product == null) return null;
+        return new OrderItemId(order.getId(), product.getId());
+    }
 
     @Data
     @NoArgsConstructor
