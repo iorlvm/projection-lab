@@ -1,6 +1,7 @@
 package lab.weien.controller;
 
-import lab.weien.factory.ProjectionFactory;
+import lab.weien.model.entity.OrderEntity;
+import lab.weien.projection.ProjectionBuilder;
 import lab.weien.repo.OrderRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,13 +18,9 @@ public class Controller {
 
     @GetMapping("/test")
     public List<?> test() {
-        List<ProjectionFactory.Field> fields = List.of(
-                new ProjectionFactory.Field("id", String.class),
-                new ProjectionFactory.Field("userId", String.class),
-                new ProjectionFactory.Field("items", List.class)
-        );
-
-        Class<?> aClass = ProjectionFactory.create(fields);
+        Class<?> aClass = new ProjectionBuilder()
+                .fromEntity(OrderEntity.class, "id", "userId", "items")
+                .build();
         return orderRepo.findAllBy(aClass);
 
         // return orderRepo.findAllBy(OrderEntity.class);

@@ -1,4 +1,4 @@
-package lab.weien.factory;
+package lab.weien.projection;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
