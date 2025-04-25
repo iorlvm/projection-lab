@@ -5,6 +5,7 @@ import lombok.Getter;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.annotation.AnnotationDescription;
 import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,9 +14,9 @@ import java.util.List;
 import java.util.Objects;
 
 public class ProjectionFactory {
-    public static Class<?> create(List<Field> fields) {
+    public static Class<?> create(List<Field> fields, String hash) {
         try {
-            String dynamicInterfaceName = "lab.weien.dynamic.projection.$DynamicProjection";
+            String dynamicInterfaceName = "lab.weien.dynamic.projection.$DynamicProjection" + hash;
 
             ByteBuddy byteBuddy = new ByteBuddy();
             DynamicType.Builder<?> builder = byteBuddy
@@ -23,17 +24,29 @@ public class ProjectionFactory {
                     .name(dynamicInterfaceName);
 
             for (Field field : fields) {
-                builder = builder.defineMethod(
-                                "get" + capitalize(field.getName()),
-                                field.getClazz(),
-                                Visibility.PUBLIC
-                        )
-                        .withoutCode()
-                        .annotateMethod(
-                                AnnotationDescription.Builder.ofType(Value.class)
-                                        .define("value", "#{" + field.getAttribute() + "}")
-                                        .build()
-                        );
+                if (field.getNestedClazz() != null) {
+                    Class<?> nestedClass = field.getNestedClazz();
+
+                    TypeDescription.Generic listOfNestedClassGeneric = TypeDescription.Generic.Builder
+                            .parameterizedType(List.class, nestedClass)
+                            .build();
+
+                    builder = builder.defineMethod(
+                                    "get" + capitalize(field.getName()),
+                                    listOfNestedClassGeneric,
+                                    Visibility.PUBLIC
+                            )
+                            .withoutCode()
+                            .annotateMethod(defineValueAnnotation(field.getValueExpression()));
+                } else {
+                    builder = builder.defineMethod(
+                                    "get" + capitalize(field.getName()),
+                                    field.getClazz(),
+                                    Visibility.PUBLIC
+                            )
+                            .withoutCode()
+                            .annotateMethod(defineValueAnnotation(field.getValueExpression()));
+                }
             }
 
             return builder.make()
@@ -44,6 +57,12 @@ public class ProjectionFactory {
         }
     }
 
+    private static AnnotationDescription defineValueAnnotation(String valueExpression) {
+        return AnnotationDescription.Builder.ofType(Value.class)
+                .define("value", "#{" + valueExpression + "}")
+                .build();
+    }
+
     private static String capitalize(String str) {
         if (str == null || str.isEmpty()) {
             return str;
@@ -51,20 +70,28 @@ public class ProjectionFactory {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
-
     @Getter
     @AllArgsConstructor
     public static class Field {
-        private String name;
-        private Class<?> clazz;
-        private String attribute;
+        private final String name;
+        private final Class<?> clazz;
+        private final Class<?> nestedClazz;
+        private final String valueExpression;
 
         public Field(String name, Class<?> clazz) {
-            this(name, clazz, null);
+            this(name, clazz, null, null);
         }
 
-        public String getAttribute() {
-            return "target." + (attribute == null ? name : attribute);
+        public Field(String name, Class<?> clazz, String valueExpression) {
+            this(name, clazz, null, valueExpression);
+        }
+
+        public Field(String name, Class<?> clazz, Class<?> nestedClazz) {
+            this(name, clazz, nestedClazz, null);
+        }
+
+        public String getValueExpression() {
+            return valueExpression != null ? valueExpression : ("target." + name);
         }
 
         @Override

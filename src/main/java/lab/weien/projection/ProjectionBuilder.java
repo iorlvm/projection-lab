@@ -1,14 +1,26 @@
 package lab.weien.projection;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ProjectionBuilder {
-    private final List<ProjectionFactory.Field> fields = new ArrayList<>();
+    private final Set<ProjectionFactory.Field> fields = new HashSet<>();
 
     public ProjectionBuilder addField(String name, Class<?> type) {
         fields.add(new ProjectionFactory.Field(name, type));
+        return this;
+    }
+
+    public ProjectionBuilder addField(String name, Class<?> type, String valueExpression) {
+        fields.add(new ProjectionFactory.Field(name, type, valueExpression));
+        return this;
+    }
+
+    public ProjectionBuilder addNestedField(String name, ProjectionBuilder nestedBuilder) {
+        Class<?> nestedType = nestedBuilder.build();
+        fields.add(new ProjectionFactory.Field(name, List.class, nestedType));
         return this;
     }
 
@@ -25,7 +37,7 @@ public class ProjectionBuilder {
     }
 
     public Class<?> build() {
-        return ProjectionFactory.create(fields);
+        // TODO: 未來管理器擴充嫁接
+        return ProjectionFactory.create(fields.stream().toList(), hashCode() + "");
     }
-
 }

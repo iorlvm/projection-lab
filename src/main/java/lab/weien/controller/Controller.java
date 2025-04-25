@@ -1,6 +1,7 @@
 package lab.weien.controller;
 
 import lab.weien.model.entity.OrderEntity;
+import lab.weien.model.entity.OrderItemEntity;
 import lab.weien.projection.ProjectionBuilder;
 import lab.weien.repo.OrderRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +19,17 @@ public class Controller {
 
     @GetMapping("/test")
     public List<?> test() {
-        Class<?> aClass = new ProjectionBuilder()
-                .fromEntity(OrderEntity.class, "id", "userId", "items")
+        Class<?> projectionClass = new ProjectionBuilder()
+                .fromEntity(OrderEntity.class, "id", "userId")
+                .addNestedField("items",
+                        new ProjectionBuilder()
+                                .fromEntity(OrderItemEntity.class, "count")
+                                .addField("name", String.class, "target.product.name")
+                                .addField("price", Long.class, "target.product.price")
+                                .addField("totalPrice", Long.class, "target.product.price * target.count")
+                )
                 .build();
-        return orderRepo.findAllBy(aClass);
+        return orderRepo.findAllBy(projectionClass);
 
         // return orderRepo.findAllBy(OrderEntity.class);
         // return orderRepo.findAllBy(OrderLite.class);
