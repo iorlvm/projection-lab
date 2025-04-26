@@ -27,7 +27,7 @@ public class Controller {
                 .build();
         Class<?> orderProjection = new ProjectionBuilder()
                 .fromEntity(OrderEntity.class, "id", "userId")
-                .addNestedField("orderList", itemProjection, "target.items")
+                .addFieldForList("orderList", itemProjection, "target.items")
                 .build();
         return orderRepo.findAllBy(orderProjection);
 

@@ -14,7 +14,7 @@ import java.util.Objects;
 
 @Slf4j
 public class ProjectionFactory {
-    public static Class<?> create(List<Field> fields, String hash) {
+    static Class<?> create(List<Field> fields, String hash) {
         try {
             String dynamicInterfaceName = "lab.weien.projection.dynamic.$D" + hash;
 
@@ -24,16 +24,14 @@ public class ProjectionFactory {
                     .name(dynamicInterfaceName);
 
             for (Field field : fields) {
-                if (field.nestedClazz() != null) {
-                    Class<?> nestedClass = field.nestedClazz();
-
-                    TypeDescription.Generic listOfNestedClassGeneric = TypeDescription.Generic.Builder
-                            .parameterizedType(List.class, nestedClass)
+                if (field.genericType() != null) {
+                    TypeDescription.Generic fieldGenericType = TypeDescription.Generic.Builder
+                            .parameterizedType(field.type(), field.genericType())
                             .build();
 
                     builder = builder.defineMethod(
                                     "get" + capitalize(field.name()),
-                                    listOfNestedClassGeneric,
+                                    fieldGenericType,
                                     Visibility.PUBLIC
                             )
                             .withoutCode()
@@ -41,7 +39,7 @@ public class ProjectionFactory {
                 } else {
                     builder = builder.defineMethod(
                                     "get" + capitalize(field.name()),
-                                    field.clazz(),
+                                    field.type(),
                                     Visibility.PUBLIC
                             )
                             .withoutCode()
@@ -77,7 +75,7 @@ public class ProjectionFactory {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
-    public record Field(String name, Class<?> clazz, Class<?> nestedClazz,
+    public record Field(String name, Class<?> type, Class<?> genericType,
                         String valueExpression) implements Comparable<Field> {
         @Override
         public String valueExpression() {
