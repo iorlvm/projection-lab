@@ -1,5 +1,6 @@
 package lab.weien.projection;
 
+import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.annotation.AnnotationDescription;
 import net.bytebuddy.description.modifier.Visibility;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 public class ProjectionFactory {
     public static Class<?> create(List<Field> fields, String hash) {
         try {
@@ -52,6 +54,12 @@ public class ProjectionFactory {
                     .load(ProjectionFactory.class.getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
                     .getLoaded();
         } catch (Exception e) {
+            Class<?> res = ProjectionManager.get(hash);
+            if (res != null) {
+                log.error("Lock mechanism failed! Projection interface was created by another thread unexpectedly: {}", res.getName(), e);
+                return res;
+            }
+
             throw new RuntimeException("Failed to generate projection interface", e);
         }
     }

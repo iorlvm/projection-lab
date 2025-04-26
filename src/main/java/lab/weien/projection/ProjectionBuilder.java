@@ -1,5 +1,6 @@
 package lab.weien.projection;
 
+import lab.weien.utils.LockManager;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
@@ -9,7 +10,7 @@ import java.util.Set;
 
 @Slf4j
 public class ProjectionBuilder {
-    private static final Object lock = new Object();
+    private static final LockManager<String> lockManager = new LockManager<>();
     private final Set<ProjectionFactory.Field> fields = new HashSet<>();
 
     public ProjectionBuilder addField(String fieldName, Class<?> type) {
@@ -52,34 +53,35 @@ public class ProjectionBuilder {
     public Class<?> build() {
         String hash = ProjectionManager.toHash(fields);
         Class<?> res = ProjectionManager.get(hash);
-        if (res == null) res = generateProjectionWithLock(hash, this);
-        return res;
-    }
+        if (res == null) {
+            res = lockManager.executeWithLock(hash, () -> {
+                Class<?> clazz = ProjectionManager.get(hash);
+                if (clazz != null) {
+                    log.debug("Projection interface already exists in cache: {}", clazz.getName());
+                    return clazz;
+                }
 
-    private static Class<?> generateProjectionWithLock(String hash, ProjectionBuilder builder) {
-        synchronized (lock) {
-            Class<?> res = ProjectionManager.get(hash);
-            if (res != null) return res;
-
-            log.info("Creating projection interface.\nFields: {}", builder);
-            res = ProjectionFactory.create(builder.fields.stream().toList(), hash);
-            ProjectionManager.register(hash, res);
-            log.info("Projection interface created: {}", res.getName());
-            return res;
+                log.info("Creating projection interface.\n{}", this);
+                clazz = ProjectionFactory.create(fields.stream().toList(), hash);
+                ProjectionManager.register(hash, clazz);
+                log.info("Projection interface created: {}", clazz.getName());
+                return clazz;
+            });
         }
+        return res;
     }
 
     @Override
     public String toString() {
-        StringBuilder stringBuilder = new StringBuilder("[\n");
+        StringBuilder stringBuilder = new StringBuilder("ProjectionBuilder: [\n");
         fields.stream().sorted().forEach(field ->
                 stringBuilder
                         .append("\t")
                         .append(field.toString())
                         .append(",\n")
         );
-        if (stringBuilder.length() == 2) {
-            stringBuilder.deleteCharAt(1);
+        if (stringBuilder.length() == 21) {
+            stringBuilder.deleteCharAt(20);
         } else {
             stringBuilder.deleteCharAt(stringBuilder.length() - 2);
         }
