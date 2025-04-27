@@ -3,7 +3,10 @@ package lab.weien.projection;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,7 +45,7 @@ class ProjectionBuilderTest {
         Class<?> second = new ProjectionBuilder()
                 .addField("name", String.class)
                 .addField("price", Long.class)
-                .addFieldForList("tags", String.class)
+                .addField("tags", List.class, String.class)
                 .build();
 
         assertSame(first, second);
@@ -55,11 +58,11 @@ class ProjectionBuilderTest {
                 .build();
 
         Class<?> second = new ProjectionBuilder()
-                .addFieldForSet("tags", String.class)
+                .addField("tags", Set.class, String.class)
                 .build();
 
         Class<?> third = new ProjectionBuilder()
-                .addFieldForList("tags", Double.class)
+                .addField("tags", List.class, Double.class)
                 .build();
 
         assertNotSame(first, second);
@@ -121,10 +124,10 @@ class ProjectionBuilderTest {
                     () -> {
                         builder.addField(fieldName, validType);
                         builder.addField(fieldName, validType, valueExpression);
-                        builder.addFieldForList(fieldName, validType);
-                        builder.addFieldForList(fieldName, validType, valueExpression);
-                        builder.addFieldForSet(fieldName, validType);
-                        builder.addFieldForSet(fieldName, validType, valueExpression);
+                        builder.addField(fieldName, List.class, validType);
+                        builder.addField(fieldName, List.class, validType, valueExpression);
+                        builder.addField(fieldName, Set.class, validType);
+                        builder.addField(fieldName, Set.class, validType, valueExpression);
                     }
             );
         }
@@ -144,8 +147,7 @@ class ProjectionBuilderTest {
             Assertions.assertDoesNotThrow(
                     () -> {
                         builder.addField(fieldName, String.class, validValueExpression);
-                        builder.addFieldForList(fieldName, String.class, validValueExpression);
-                        builder.addFieldForSet(fieldName, String.class, validValueExpression);
+                        builder.addField(fieldName, List.class, String.class, validValueExpression);
                     }
             );
         }
@@ -158,55 +160,6 @@ class ProjectionBuilderTest {
         ProjectionBuilder builder = new ProjectionBuilder();
 
         String fieldName = "fieldName";
-        String valueExpression = "target.name";
-
-        List<Class<?>> invalidTypes = List.of(
-                Collection.class,
-                List.class,
-                Set.class,
-                Queue.class,
-                Deque.class,
-                ArrayList.class,
-                LinkedList.class,
-                HashSet.class,
-                TreeSet.class,
-                LinkedHashSet.class,
-                PriorityQueue.class,
-                ArrayDeque.class,
-                ConcurrentLinkedQueue.class,
-                ConcurrentLinkedDeque.class,
-                CopyOnWriteArrayList.class,
-                CopyOnWriteArraySet.class,
-                Stack.class,
-                Vector.class
-        );
-
-        for (Class<?> invalidType : invalidTypes) {
-            Assertions.assertThrows(IllegalArgumentException.class, () ->
-                            builder.addField(fieldName, invalidType),
-                    "IllegalArgumentException was expected for invalid type in addField: " + invalidType.getName()
-            );
-            Assertions.assertThrows(IllegalArgumentException.class, () ->
-                            builder.addField(fieldName, invalidType, valueExpression),
-                    "IllegalArgumentException was expected for invalid type in addField with expression: " + invalidType.getName()
-            );
-            Assertions.assertThrows(IllegalArgumentException.class, () ->
-                            builder.addFieldForList(fieldName, invalidType),
-                    "IllegalArgumentException was expected for invalid type in addFieldForList: " + invalidType.getName()
-            );
-            Assertions.assertThrows(IllegalArgumentException.class, () ->
-                            builder.addFieldForList(fieldName, invalidType, valueExpression),
-                    "IllegalArgumentException was expected for invalid type in addFieldForList with expression: " + invalidType.getName()
-            );
-            Assertions.assertThrows(IllegalArgumentException.class, () ->
-                            builder.addFieldForSet(fieldName, invalidType),
-                    "IllegalArgumentException was expected for invalid type in addFieldForSet: " + invalidType.getName()
-            );
-            Assertions.assertThrows(IllegalArgumentException.class, () ->
-                            builder.addFieldForSet(fieldName, invalidType, valueExpression),
-                    "IllegalArgumentException was expected for invalid type in addFieldForSet with expression: " + invalidType.getName()
-            );
-        }
 
         List<String> invalidValueExpressions = List.of(
                 "target",                       // 缺少 .field
@@ -223,12 +176,8 @@ class ProjectionBuilderTest {
                     "IllegalArgumentException was expected for invalid value expression in addField: " + invalidExpression
             );
             Assertions.assertThrows(IllegalArgumentException.class, () ->
-                            builder.addFieldForList(fieldName, String.class, invalidExpression),
-                    "IllegalArgumentException was expected for invalid value expression in addFieldForList: " + invalidExpression
-            );
-            Assertions.assertThrows(IllegalArgumentException.class, () ->
-                            builder.addFieldForSet(fieldName, String.class, invalidExpression),
-                    "IllegalArgumentException was expected for invalid value expression in addFieldForSet: " + invalidExpression
+                            builder.addField(fieldName, List.class, String.class, invalidExpression),
+                    "IllegalArgumentException was expected for invalid value expression in addField: " + invalidExpression
             );
         }
 

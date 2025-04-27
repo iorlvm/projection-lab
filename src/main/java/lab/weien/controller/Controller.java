@@ -27,7 +27,7 @@ public class Controller {
                 .build();
         Class<?> orderProjection = new ProjectionBuilder()
                 .fromEntity(OrderEntity.class, "id", "userId")
-                .addFieldForList("orderList", itemProjection, "target.items")
+                .addField("orderList", List.class, itemProjection, "target.items")
                 .build();
         return orderRepo.findAllBy(orderProjection);
 

@@ -5,9 +5,7 @@ import lab.weien.projection.utils.ReflectHelper;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -18,38 +16,21 @@ public class ProjectionBuilder {
     private final Set<ProjectionFactory.Field> fields = new HashSet<>();
 
     public ProjectionBuilder addField(String fieldName, Class<?> type) {
-        return addField(fieldName, type, null);
+        return addField(fieldName, type, null, null);
     }
 
     public ProjectionBuilder addField(String fieldName, Class<?> type, String valueExpression) {
+        return addField(fieldName, type, null, valueExpression);
+    }
+
+    public ProjectionBuilder addField(String fieldName, Class<?> type, Class<?> genericType) {
+        return addField(fieldName, type, genericType, null);
+    }
+
+    public ProjectionBuilder addField(String fieldName, Class<?> type, Class<?> genericType, String valueExpression) {
         validField(fieldName, type);
         valueExpression = validValueExpression(valueExpression);
-        if (Collection.class.isAssignableFrom(type))
-            throw new IllegalArgumentException("Collection type is not allowed");
-        replaceField(new ProjectionFactory.Field(fieldName.trim(), type, null, valueExpression));
-        return this;
-    }
-
-    public ProjectionBuilder addFieldForList(String fieldName, Class<?> elementType) {
-        return addFieldForCollection(fieldName, List.class, elementType, null);
-    }
-
-    public ProjectionBuilder addFieldForList(String fieldName, Class<?> elementType, String valueExpression) {
-        return addFieldForCollection(fieldName, List.class, elementType, valueExpression);
-    }
-
-    public ProjectionBuilder addFieldForSet(String fieldName, Class<?> elementType) {
-        return addFieldForCollection(fieldName, Set.class, elementType, null);
-    }
-
-    public ProjectionBuilder addFieldForSet(String fieldName, Class<?> elementType, String valueExpression) {
-        return addFieldForCollection(fieldName, Set.class, elementType, valueExpression);
-    }
-
-    private ProjectionBuilder addFieldForCollection(String fieldName, Class<?> collectionType, Class<?> elementType, String valueExpression) {
-        validField(fieldName, elementType);
-        valueExpression = validValueExpression(valueExpression);
-        replaceField(new ProjectionFactory.Field(fieldName.trim(), collectionType, elementType, valueExpression));
+        replaceField(new ProjectionFactory.Field(fieldName.trim(), type, genericType, valueExpression));
         return this;
     }
 
@@ -121,9 +102,6 @@ public class ProjectionBuilder {
         }
         if (type == null) {
             throw new IllegalArgumentException("type is null");
-        }
-        if (Collection.class.isAssignableFrom(type)) {
-            throw new IllegalArgumentException("Collection type is not allowed");
         }
     }
 
