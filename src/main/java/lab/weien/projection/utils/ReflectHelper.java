@@ -1,4 +1,4 @@
-package lab.weien.utils;
+package lab.weien.projection.utils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
