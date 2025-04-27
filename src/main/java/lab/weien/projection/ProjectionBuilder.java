@@ -1,11 +1,10 @@
 package lab.weien.projection;
 
 import lab.weien.utils.LockManager;
+import lab.weien.utils.ReflectHelper;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -59,25 +58,13 @@ public class ProjectionBuilder {
             try {
                 Field reflectField = entityClass.getDeclaredField(fieldName);
                 Class<?> type = reflectField.getType();
-                Class<?> genericType = getGenericTypeIfExist(reflectField);
+                Class<?> genericType = ReflectHelper.resolveCollectionElementType(reflectField);
                 replaceField(new ProjectionFactory.Field(fieldName, type, genericType, null));
             } catch (NoSuchFieldException e) {
                 throw new RuntimeException("Field not found in entity: " + fieldName, e);
             }
         }
         return this;
-    }
-
-    private Class<?> getGenericTypeIfExist(Field field) {
-        if (!Collection.class.isAssignableFrom(field.getType())) return null;
-
-        Type genericType = field.getGenericType();
-        if (!(genericType instanceof ParameterizedType parameterizedType)) return null;
-
-        Type actualTypeArgument = parameterizedType.getActualTypeArguments()[0];
-        if (!(actualTypeArgument instanceof Class<?>)) return null;
-
-        return (Class<?>) actualTypeArgument;
     }
 
     private void replaceField(ProjectionFactory.Field field) {
