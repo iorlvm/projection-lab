@@ -1,8 +1,7 @@
 package lab.weien.controller;
 
-import lab.weien.model.entity.OrderEntity;
-import lab.weien.model.entity.OrderItemEntity;
-import lab.weien.projection.ProjectionBuilder;
+import lab.weien.model.dto.OrderDto;
+import lab.weien.projection.model.ClassWrapper;
 import lab.weien.repo.OrderRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +18,10 @@ public class Controller {
 
     @GetMapping("/test")
     public List<?> test() {
+        ClassWrapper<OrderDto> wrapper = new ClassWrapper<>(OrderDto.class);
+        return orderRepo.findAllBy(wrapper.getProjection());
+
+        /*
         Class<?> itemProjection = new ProjectionBuilder()
                 .fromEntity(OrderItemEntity.class, "count")
                 .addField("name", String.class, "target.product.name")
@@ -30,6 +33,7 @@ public class Controller {
                 .addField("orderList", List.class, itemProjection, "target.items")
                 .build();
         return orderRepo.findAllBy(orderProjection);
+        */
 
         // return orderRepo.findAllBy(OrderEntity.class);
         // return orderRepo.findAllBy(OrderLite.class);

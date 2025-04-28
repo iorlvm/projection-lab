@@ -61,12 +61,16 @@ public class DtoResolver {
     }
 
     private static void addField(ProjectionBuilder builder, String name, Class<?> type, Class<?> genericType, String valueExpression) {
-        if (isResolvableBySpring(genericType)) {
-            builder.addField(name, type, genericType, valueExpression);
-        } else {
-            Class<?> resolved = resolve(genericType);
-            builder.addField(name, type, resolved, valueExpression);
+        if (type == null) throw new IllegalArgumentException("The field type is null: " + name);
+
+        if (notResolvableBySpring(type)) {
+            type = resolve(type);
         }
+        if (genericType != null && notResolvableBySpring(genericType)) {
+            genericType = resolve(genericType);
+        }
+
+        builder.addField(name, type, genericType, valueExpression);
     }
 
     private static Class<?> resolveGeneric(Type genericType) {
@@ -93,9 +97,8 @@ public class DtoResolver {
         }
     }
 
-    private static boolean isResolvableBySpring(Class<?> type) {
-        return type == null ||
-                type.getName().startsWith("java") ||
-                type.getName().startsWith("org.springframework");
+    private static boolean notResolvableBySpring(Class<?> type) {
+        return !type.getName().startsWith("java") &&
+                !type.getName().startsWith("org.springframework");
     }
 }
