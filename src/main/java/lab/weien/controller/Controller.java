@@ -1,7 +1,7 @@
 package lab.weien.controller;
 
 import lab.weien.model.dto.OrderDto;
-import lab.weien.projection.model.ClassWrapper;
+import lab.weien.projection.ClassWrapper;
 import lab.weien.repo.OrderRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

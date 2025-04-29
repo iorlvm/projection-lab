@@ -1,13 +1,12 @@
-package lab.weien.projection.utils;
+package lab.weien.projection;
 
-import lab.weien.projection.ProjectionBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.*;
 import java.util.Map;
 
-import static lab.weien.projection.utils.ReflectHelper.extractPropertyName;
-import static lab.weien.projection.utils.ReflectHelper.isSetter;
+import static lab.weien.projection.ReflectHelper.extractPropertyName;
+import static lab.weien.projection.ReflectHelper.isSetter;
 
 @Slf4j
 public class DtoResolver {

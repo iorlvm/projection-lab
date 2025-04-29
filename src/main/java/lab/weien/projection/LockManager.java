@@ -1,4 +1,4 @@
-package lab.weien.projection.utils;
+package lab.weien.projection;
 
 import java.util.concurrent.ConcurrentHashMap;
 
