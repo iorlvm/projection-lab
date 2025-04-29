@@ -45,7 +45,7 @@ class ProjectionBuilderTest {
         Class<?> second = new ProjectionBuilder()
                 .addField("name", String.class)
                 .addField("price", Long.class)
-                .addField("tags", List.class, String.class)
+                .addField("tags", List.class, List.of(String.class))
                 .build();
 
         assertSame(first, second);
@@ -58,11 +58,11 @@ class ProjectionBuilderTest {
                 .build();
 
         Class<?> second = new ProjectionBuilder()
-                .addField("tags", Set.class, String.class)
+                .addField("tags", Set.class, List.of(String.class))
                 .build();
 
         Class<?> third = new ProjectionBuilder()
-                .addField("tags", List.class, Double.class)
+                .addField("tags", List.class, List.of(Double.class))
                 .build();
 
         assertNotSame(first, second);
@@ -124,10 +124,10 @@ class ProjectionBuilderTest {
                     () -> {
                         builder.addField(fieldName, validType);
                         builder.addField(fieldName, validType, valueExpression);
-                        builder.addField(fieldName, List.class, validType);
-                        builder.addField(fieldName, List.class, validType, valueExpression);
-                        builder.addField(fieldName, Set.class, validType);
-                        builder.addField(fieldName, Set.class, validType, valueExpression);
+                        builder.addField(fieldName, List.class, List.of(validType));
+                        builder.addField(fieldName, List.class, List.of(validType), valueExpression);
+                        builder.addField(fieldName, Set.class, List.of(validType, String.class));
+                        builder.addField(fieldName, Set.class, List.of(validType, String.class, Double.class), valueExpression);
                     }
             );
         }
@@ -147,7 +147,7 @@ class ProjectionBuilderTest {
             Assertions.assertDoesNotThrow(
                     () -> {
                         builder.addField(fieldName, String.class, validValueExpression);
-                        builder.addField(fieldName, List.class, String.class, validValueExpression);
+                        builder.addField(fieldName, List.class, List.of(String.class), validValueExpression);
                     }
             );
         }
@@ -176,7 +176,7 @@ class ProjectionBuilderTest {
                     "IllegalArgumentException was expected for invalid value expression in addField: " + invalidExpression
             );
             Assertions.assertThrows(IllegalArgumentException.class, () ->
-                            builder.addField(fieldName, List.class, String.class, invalidExpression),
+                            builder.addField(fieldName, List.class, List.of(String.class), invalidExpression),
                     "IllegalArgumentException was expected for invalid value expression in addField: " + invalidExpression
             );
         }

@@ -2,11 +2,12 @@ package lab.weien.projection;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.reflect.*;
-import java.util.Map;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.RecordComponent;
+import java.util.List;
 
-import static lab.weien.projection.ReflectHelper.extractPropertyName;
-import static lab.weien.projection.ReflectHelper.isSetter;
+import static lab.weien.projection.ReflectHelper.*;
 
 @Slf4j
 public class DtoResolver {
@@ -30,9 +31,9 @@ public class DtoResolver {
         for (RecordComponent component : components) {
             String name = component.getName();
             Class<?> type = component.getType();
-            Class<?> genericType = resolveGeneric(component.getGenericType());
+            List<Class<?>> genericTypes = resolveGeneric(component.getGenericType());
 
-            addField(builder, name, type, genericType, null);
+            addField(builder, name, type, genericTypes, null);
         }
         return builder;
     }
@@ -54,46 +55,24 @@ public class DtoResolver {
 
         String name = extractPropertyName(method.getName());
         Class<?> type = method.getParameterTypes()[0];
-        Class<?> genericType = resolveGeneric(method.getGenericParameterTypes()[0]);
+        List<Class<?>> genericTypes = resolveGeneric(method.getGenericParameterTypes()[0]);
 
-        addField(builder, name, type, genericType, valueExpression);
+        addField(builder, name, type, genericTypes, valueExpression);
     }
 
-    private static void addField(ProjectionBuilder builder, String name, Class<?> type, Class<?> genericType, String valueExpression) {
+    private static void addField(ProjectionBuilder builder, String name, Class<?> type, List<Class<?>> genericTypes, String valueExpression) {
         if (type == null) throw new IllegalArgumentException("The field type is null: " + name);
 
         if (notResolvableBySpring(type)) {
             type = resolve(type);
         }
-        if (genericType != null && notResolvableBySpring(genericType)) {
-            genericType = resolve(genericType);
+        if (genericTypes != null && !genericTypes.isEmpty()) {
+            genericTypes = genericTypes.stream()
+                    .map(genericType -> notResolvableBySpring(genericType) ? resolve(genericType) : genericType)
+                    .toList();
         }
 
-        builder.addField(name, type, genericType, valueExpression);
-    }
-
-    private static Class<?> resolveGeneric(Type genericType) {
-        if (genericType instanceof ParameterizedType parameterizedType) {
-            Type[] typeArguments = parameterizedType.getActualTypeArguments();
-            if (typeArguments.length == 1 && typeArguments[0] instanceof Class<?> argument) {
-                return argument;
-            } else if (typeArguments.length > 1) {
-                handleMultipleGeneric(parameterizedType.getRawType());
-            }
-        }
-        return null;
-    }
-
-    private static void handleMultipleGeneric(Type rawType) {
-        if (rawType instanceof Class<?> rawClass && Map.class.isAssignableFrom(rawClass)) {
-            log.info("The generic type '{}' is a Map with multiple arguments. "
-                            + "Map generics will be ignored, falling back to raw type.",
-                    rawType.getTypeName());
-        } else {
-            log.warn("The generic type '{}' has multiple arguments but this implementation "
-                            + "only supports single generic arguments. The type will be treated as raw.",
-                    rawType.getTypeName());
-        }
+        builder.addField(name, type, genericTypes, valueExpression);
     }
 
     private static boolean notResolvableBySpring(Class<?> type) {

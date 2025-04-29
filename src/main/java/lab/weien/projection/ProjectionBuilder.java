@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -14,21 +15,21 @@ public class ProjectionBuilder {
     private final Set<ProjectionFactory.Field> fields = new HashSet<>();
 
     public ProjectionBuilder addField(String fieldName, Class<?> type) {
-        return addField(fieldName, type, null, null);
+        return addField(fieldName, type, List.of(), null);
     }
 
     public ProjectionBuilder addField(String fieldName, Class<?> type, String valueExpression) {
-        return addField(fieldName, type, null, valueExpression);
+        return addField(fieldName, type, List.of(), valueExpression);
     }
 
-    public ProjectionBuilder addField(String fieldName, Class<?> type, Class<?> genericType) {
-        return addField(fieldName, type, genericType, null);
+    public ProjectionBuilder addField(String fieldName, Class<?> type, List<Class<?>> genericTypes) {
+        return addField(fieldName, type, genericTypes, null);
     }
 
-    public ProjectionBuilder addField(String fieldName, Class<?> type, Class<?> genericType, String valueExpression) {
+    public ProjectionBuilder addField(String fieldName, Class<?> type, List<Class<?>> genericTypes, String valueExpression) {
         validField(fieldName, type);
         valueExpression = validValueExpression(valueExpression);
-        replaceField(new ProjectionFactory.Field(fieldName.trim(), type, genericType, valueExpression));
+        replaceField(new ProjectionFactory.Field(fieldName.trim(), type, genericTypes, valueExpression));
         return this;
     }
 
@@ -37,8 +38,8 @@ public class ProjectionBuilder {
             try {
                 Field reflectField = entityClass.getDeclaredField(fieldName);
                 Class<?> type = reflectField.getType();
-                Class<?> genericType = ReflectHelper.resolveCollectionElementType(reflectField);
-                replaceField(new ProjectionFactory.Field(fieldName, type, genericType, null));
+                List<Class<?>> genericTypes = ReflectHelper.resolveCollectionElementType(reflectField);
+                replaceField(new ProjectionFactory.Field(fieldName, type, genericTypes, null));
             } catch (NoSuchFieldException e) {
                 throw new RuntimeException("Field not found in entity: " + fieldName, e);
             }

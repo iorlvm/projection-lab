@@ -5,6 +5,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Stream;
 
 public class ReflectHelper {
     /**
@@ -17,18 +19,28 @@ public class ReflectHelper {
      * @param field 要檢查的字段，不能為 {@code null}
      * @return 如果字段為集合類型，返回其元素類型；否則返回 {@code null}
      */
-    public static Class<?> resolveCollectionElementType(Field field) {
-        if (field == null) return null;
+    public static List<Class<?>> resolveCollectionElementType(Field field) {
+        if (field == null) return List.of();
 
-        if (!Collection.class.isAssignableFrom(field.getType())) return null;
+        if (!Collection.class.isAssignableFrom(field.getType())) return List.of();
 
-        Type genericType = field.getGenericType();
-        if (!(genericType instanceof ParameterizedType parameterizedType)) return null;
+        return resolveGeneric(field.getGenericType());
+    }
 
-        Type actualTypeArgument = parameterizedType.getActualTypeArguments()[0];
-        if (!(actualTypeArgument instanceof Class<?>)) return null;
+    public static List<Class<?>> resolveGeneric(Type genericType) {
+        if (genericType instanceof ParameterizedType parameterizedType) {
+            Type[] typeArguments = parameterizedType.getActualTypeArguments();
 
-        return (Class<?>) actualTypeArgument;
+            return Stream.of(typeArguments).map(type -> {
+                if (type instanceof Class<?> rawType) {
+                    return rawType;
+                } else {
+                    // 無法解析的情況下, 暫時回退到 Object.class 避免錯誤
+                    return Object.class;
+                }
+            }).toList();
+        }
+        return List.of();
     }
 
     public static boolean isSetter(Method method) {

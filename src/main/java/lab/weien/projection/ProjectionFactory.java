@@ -24,9 +24,9 @@ public class ProjectionFactory {
                     .name(dynamicInterfaceName);
 
             for (Field field : fields) {
-                if (field.genericType() != null) {
+                if (field.genericTypes() != null && !field.genericTypes().isEmpty()) {
                     TypeDescription.Generic fieldGenericType = TypeDescription.Generic.Builder
-                            .parameterizedType(field.type(), field.genericType())
+                            .parameterizedType(field.type(), field.genericTypes())
                             .build();
 
                     builder = builder.defineMethod(
@@ -75,7 +75,7 @@ public class ProjectionFactory {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
-    public record Field(String name, Class<?> type, Class<?> genericType,
+    public record Field(String name, Class<?> type, List<Class<?>> genericTypes,
                         String valueExpression) implements Comparable<Field> {
         @Override
         public String valueExpression() {
