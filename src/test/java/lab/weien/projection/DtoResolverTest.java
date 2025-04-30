@@ -54,8 +54,7 @@ class DtoResolverTest {
         private Map<String, Internal> map2;
         private Map<String, Internal2<String, String, Internal>> map3;
 
-        // 自訂義泛形解析會異常, 原因未知
-        // private Internal2<String, String, String> internal2;
+        private Internal2<String, String, String> internal2;
 
         @Data
         static class Internal {
