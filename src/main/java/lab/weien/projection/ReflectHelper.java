@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
@@ -11,7 +13,7 @@ import java.util.stream.Stream;
 public class ReflectHelper {
     /**
      * 獲取指定 {@link Field} 的集合元素類型。
-     * 
+     *
      * 該方法會檢查字段是否為集合類型（如 List、Set 等），
      * 並嘗試提取集合中所指定的泛型參數類型。如果字段不是集合類型
      * 或未定義泛型參數，則返回 {@code null}。
@@ -28,19 +30,31 @@ public class ReflectHelper {
     }
 
     public static List<Class<?>> resolveGeneric(Type genericType) {
-        if (genericType instanceof ParameterizedType parameterizedType) {
-            Type[] typeArguments = parameterizedType.getActualTypeArguments();
-
-            return Stream.of(typeArguments).map(type -> {
-                if (type instanceof Class<?> rawType) {
-                    return rawType;
-                } else {
-                    // 無法解析的情況下, 暫時回退到 Object.class 避免錯誤
-                    return Object.class;
-                }
-            }).toList();
+        if (!(genericType instanceof ParameterizedType parameterizedType)) {
+            return List.of();
         }
-        return List.of();
+
+        Type[] typeArguments = parameterizedType.getActualTypeArguments();
+
+        return Stream.of(typeArguments).map(type -> {
+            if (type instanceof Class<?> rawType) {
+                return rawType;
+            } else {
+                // 無法解析的情況下, 暫時回退到 Object.class 避免錯誤
+                return Object.class;
+            }
+        }).toList();
+    }
+
+    public static List<Field> getAllFields(Class<?> clazz) {
+        List<Field> fields = new ArrayList<>(Arrays.asList(clazz.getDeclaredFields()));
+
+        Class<?> superclass = clazz.getSuperclass();
+        if (superclass != null && superclass != Object.class) {
+            fields.addAll(getAllFields(superclass));
+        }
+
+        return fields;
     }
 
     public static boolean isSetter(Method method) {
