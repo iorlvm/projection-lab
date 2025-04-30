@@ -15,7 +15,7 @@ class DtoResolverTest {
         final Class<?>[] projection = new Class<?>[1];
         Assertions.assertDoesNotThrow(() -> projection[0] = DtoResolver.resolve(TestDto.class));
 
-        final Method[] method = new Method[6];
+        final Method[] method = new Method[8];
         Assertions.assertDoesNotThrow(() -> {
             method[0] = projection[0].getMethod("getId");
             method[1] = projection[0].getMethod("getName");
@@ -23,6 +23,8 @@ class DtoResolverTest {
             method[3] = projection[0].getMethod("getMap");
             method[4] = projection[0].getMethod("getMap2");
             method[5] = projection[0].getMethod("getMap3");
+            method[6] = projection[0].getMethod("getInternalList");
+            method[7] = projection[0].getMethod("getInternalList2");
         });
 
         Assertions.assertEquals(String.class, method[1].getReturnType());
@@ -30,6 +32,7 @@ class DtoResolverTest {
         // 被擦除的泛形
         Assertions.assertEquals(Object.class, method[0].getReturnType());
         Assertions.assertEquals("java.util.Map<java.lang.String, java.lang.Object>", method[5].getGenericReturnType().toString());
+        Assertions.assertEquals("java.util.List<java.lang.Object>", method[7].getGenericReturnType().toString());
 
         // 解析成功的泛形
         Assertions.assertEquals("java.util.List<java.lang.String>", method[2].getGenericReturnType().toString());
@@ -37,10 +40,11 @@ class DtoResolverTest {
 
         // 後方為動態類名, 無法預先斷言
         Assertions.assertTrue(method[4].getGenericReturnType().toString().startsWith("java.util.Map<java.lang.String, lab.weien.projection.dynamic.$D"));
+        Assertions.assertTrue(method[6].getGenericReturnType().toString().startsWith("java.util.List<lab.weien.projection.dynamic.$D"));
     }
 
     @Data
-    // 目前未支援, 會被泛形擦除
+    // NOTE: 繼承來的泛形參數, 目前未支援會被泛形擦除
     static class Parent<ID> {
         ID id;
     }
@@ -52,9 +56,13 @@ class DtoResolverTest {
         private List<String> tags;
         private Map<String, String> map;
         private Map<String, Internal> map2;
-        private Map<String, Internal2<String, String, Internal>> map3;
-
         private Internal2<String, String, String> internal2;
+        private Internal2<String, String, Internal> internal3;
+        private List<Internal> internalList;
+
+        // NOTE: 剩餘問題, 非自定義泛形嵌套會被泛形擦除
+        private Map<String, Internal2<String, String, Internal>> map3;
+        private List<Internal2<String, String, Internal>> internalList2;
 
         @Data
         static class Internal {
@@ -62,7 +70,6 @@ class DtoResolverTest {
         }
 
         @Data
-        // 目前未支援, 會被泛形擦除
         static class Internal2<A, B, C> {
             private A prop1;
             private B prop2;

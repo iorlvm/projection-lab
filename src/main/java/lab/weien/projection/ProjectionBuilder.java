@@ -29,6 +29,11 @@ public class ProjectionBuilder {
     public ProjectionBuilder addField(String fieldName, Class<?> type, List<Class<?>> genericTypes, String valueExpression) {
         validField(fieldName, type);
         valueExpression = validValueExpression(valueExpression);
+
+        if (type.getName().startsWith(ProjectionFactory.DYNAMIC_CLASS_NAME_PREFIX)) {
+            genericTypes = List.of();
+        }
+
         replaceField(new ProjectionFactory.Field(fieldName.trim(), type, genericTypes, valueExpression));
         return this;
     }

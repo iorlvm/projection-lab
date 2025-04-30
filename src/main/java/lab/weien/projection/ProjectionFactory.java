@@ -14,30 +14,19 @@ import java.util.Objects;
 
 @Slf4j
 public class ProjectionFactory {
-    private static final String CLASS_NAME_PREFIX = "lab.weien.projection.dynamic.$D";
+    public static final String DYNAMIC_CLASS_NAME_PREFIX = "lab.weien.projection.dynamic.$D";
 
     static Class<?> create(List<Field> fields, String hash) {
         try {
-            String dynamicInterfaceName = CLASS_NAME_PREFIX + hash;
+            String dynamicInterfaceName = DYNAMIC_CLASS_NAME_PREFIX + hash;
 
             ByteBuddy byteBuddy = new ByteBuddy();
             DynamicType.Builder<?> builder = byteBuddy
                     .makeInterface()
                     .name(dynamicInterfaceName);
 
-            // TODO: - 泛型解析問題
-            //  1. 目前動態生成的介面泛型資訊會丟失
-            //  2. 暫時跳過處理自己生成的介面（CLASS_NAME_PREFIX開頭）的泛型解析
-            //  3. 未來需要：
-            //    - 完善泛型資訊的保存
-            //    - 改進 resolveGeneric 方法來正確處理複雜泛型
-            //    - 支援動態生成介面的泛型參數
             for (Field field : fields) {
-                // TODO: 問題定位點, 自行生成的泛型介面訊息丟失所以避免二次解析自己生成的介面 (未來要支援的話必須要先解決解析問題)
-                boolean doSolve = field.genericTypes() != null &&
-                        !field.genericTypes().isEmpty() &&
-                        !field.type().getName().startsWith(CLASS_NAME_PREFIX);
-                if (doSolve) {
+                if (field.genericTypes() != null && !field.genericTypes().isEmpty()) {
                     log.info("Field[name={}, type={}, genericTypes={}]", field.name(), field.type(), field.genericTypes());
                     TypeDescription.Generic fieldGenericType = TypeDescription.Generic.Builder
                             .parameterizedType(field.type(), field.genericTypes())
