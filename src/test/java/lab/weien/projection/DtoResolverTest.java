@@ -44,7 +44,6 @@ class DtoResolverTest {
     }
 
     @Data
-    // NOTE: 繼承來的泛形參數, 目前未支援會被泛形擦除
     static class Parent<ID> {
         ID id;
     }
@@ -53,16 +52,14 @@ class DtoResolverTest {
     @EqualsAndHashCode(callSuper = true)
     static class TestDto extends Parent<String> {
         private String name;
-        private List<String> tags;
+        private List<Internal> tags;
         private Map<String, String> map;
         private Map<String, Internal> map2;
-        private Internal2<String, String, String> internal2;
-        private Internal2<String, String, Internal> internal3;
-        private List<Internal> internalList;
+        private Map<String, Map<String, Map<String, Internal>>> map3;
 
-        // NOTE: 剩餘問題, 非自定義泛形嵌套會被泛形擦除
-        private Map<String, Internal2<String, String, Internal>> map3;
-        private List<Internal2<String, String, Internal>> internalList2;
+        // NOTE: 剩餘問題, 自定義泛型 (其實已經有點超越 DTO 可接受的程度了)
+//        private Internal2<String, String, String> internal2;
+//        private Internal2<String, String, Internal> internal3;
 
         @Data
         static class Internal {

@@ -5,6 +5,7 @@ import net.bytebuddy.description.type.TypeDescription;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,9 +13,18 @@ import java.util.Set;
 @Slf4j
 public class ProjectionBuilder {
     private static final String VALUE_EXPRESSION_PATTERN = "^(target(\\.[a-zA-Z][a-zA-Z0-9_]*)+)(\\s*([+\\-*/])\\s*target(\\.[a-zA-Z][a-zA-Z0-9_]*)+)*$";
-
     private static final LockManager<String> lockManager = new LockManager<>();
+
     private final Set<ProjectionFactory.Field> fields = new HashSet<>();
+    private final TypeVariable<? extends Class<?>>[] typeParameters;
+
+    public ProjectionBuilder() {
+        this.typeParameters = null;
+    }
+
+    public ProjectionBuilder(Class<?> clazz) {
+        this.typeParameters = clazz.getTypeParameters();
+    }
 
     public ProjectionBuilder addField(String fieldName, Type type) {
         return addField(fieldName, type, null);
@@ -70,7 +80,7 @@ public class ProjectionBuilder {
             throw new IllegalArgumentException("ProjectionBuilder: No fields defined. Please add fields before calling build() method.");
         }
 
-        String hash = ProjectionManager.toHash(fields);
+        String hash = ProjectionManager.toHash(this);
         Class<?> res = ProjectionManager.get(hash);
         if (res == null) {
             res = lockManager.executeWithLock(hash, () -> {
@@ -81,7 +91,7 @@ public class ProjectionBuilder {
                 }
 
                 log.info("Creating projection interface.\n{}", this);
-                clazz = ProjectionFactory.create(fields.stream().toList(), hash);
+                clazz = ProjectionFactory.create(typeParameters, fields.stream().toList(), hash);
                 ProjectionManager.register(hash, clazz);
                 log.info("Projection interface created: {}", clazz.getName());
                 return clazz;
@@ -96,7 +106,16 @@ public class ProjectionBuilder {
             return "ProjectionBuilder: [ No fields defined ]";
         }
 
-        StringBuilder stringBuilder = new StringBuilder("ProjectionBuilder: [\n");
+        StringBuilder stringBuilder = new StringBuilder("ProjectionBuilder: \n");
+        if (typeParameters != null && typeParameters.length > 0) {
+            stringBuilder.append("[ Type Parameters: ");
+            for (TypeVariable<? extends Class<?>> typeParameter : typeParameters) {
+                stringBuilder.append(typeParameter.getName())
+                        .append(" ");
+            }
+            stringBuilder.append("]\nFields: ");
+        }
+        stringBuilder.append("[\n");
         fields.stream().sorted().forEach(field ->
                 stringBuilder
                         .append("\t")

@@ -9,6 +9,7 @@ import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,7 +17,7 @@ import java.util.Objects;
 public class ProjectionFactory {
     public static final String DYNAMIC_CLASS_NAME_PREFIX = "lab.weien.projection.dynamic.$D";
 
-    static Class<?> create(List<Field> fields, String hash) {
+    static Class<?> create(TypeVariable<? extends Class<?>>[] typeParameters, List<Field> fields, String hash) {
         try {
             String dynamicInterfaceName = DYNAMIC_CLASS_NAME_PREFIX + hash;
 
@@ -24,6 +25,12 @@ public class ProjectionFactory {
             DynamicType.Builder<?> builder = byteBuddy
                     .makeInterface()
                     .name(dynamicInterfaceName);
+
+            if (typeParameters != null) {
+                for (TypeVariable<? extends Class<?>> typeParam : typeParameters) {
+                    builder.typeVariable(typeParam.getName());
+                }
+            }
 
             for (Field field : fields) {
                 builder = builder.defineMethod(
