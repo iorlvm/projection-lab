@@ -26,28 +26,13 @@ public class ProjectionFactory {
                     .name(dynamicInterfaceName);
 
             for (Field field : fields) {
-                if (field.genericTypes() != null && !field.genericTypes().isEmpty()) {
-                    log.info("Field[name={}, type={}, genericTypes={}]", field.name(), field.type(), field.genericTypes());
-                    TypeDescription.Generic fieldGenericType = TypeDescription.Generic.Builder
-                            .parameterizedType(field.type(), field.genericTypes())
-                            .build();
-
-                    builder = builder.defineMethod(
-                                    "get" + capitalize(field.name()),
-                                    fieldGenericType,
-                                    Visibility.PUBLIC
-                            )
-                            .withoutCode()
-                            .annotateMethod(defineValueAnnotation(field.valueExpression()));
-                } else {
-                    builder = builder.defineMethod(
-                                    "get" + capitalize(field.name()),
-                                    field.type(),
-                                    Visibility.PUBLIC
-                            )
-                            .withoutCode()
-                            .annotateMethod(defineValueAnnotation(field.valueExpression()));
-                }
+                builder = builder.defineMethod(
+                                "get" + capitalize(field.name()),
+                                field.generic(),
+                                Visibility.PUBLIC
+                        )
+                        .withoutCode()
+                        .annotateMethod(defineValueAnnotation(field.valueExpression()));
             }
 
             return builder
@@ -78,7 +63,7 @@ public class ProjectionFactory {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
-    public record Field(String name, Class<?> type, List<Class<?>> genericTypes,
+    public record Field(String name, TypeDescription.Generic generic,
                         String valueExpression) implements Comparable<Field> {
         @Override
         public String valueExpression() {

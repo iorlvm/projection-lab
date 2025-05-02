@@ -3,10 +3,7 @@ package lab.weien.projection;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -125,9 +122,8 @@ class ProjectionBuilderTest {
                         builder.addField(fieldName, validType);
                         builder.addField(fieldName, validType, valueExpression);
                         builder.addField(fieldName, List.class, List.of(validType));
-                        builder.addField(fieldName, List.class, List.of(validType), valueExpression);
-                        builder.addField(fieldName, Set.class, List.of(validType, String.class));
-                        builder.addField(fieldName, Set.class, List.of(validType, String.class, Double.class), valueExpression);
+                        builder.addField(fieldName, Set.class, List.of(validType), valueExpression);
+                        builder.addField(fieldName, Map.class, List.of(validType, String.class));
                     }
             );
         }

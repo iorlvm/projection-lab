@@ -1,8 +1,10 @@
 package lab.weien.projection;
 
 import lombok.extern.slf4j.Slf4j;
+import net.bytebuddy.description.type.TypeDescription;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -14,27 +16,33 @@ public class ProjectionBuilder {
     private static final LockManager<String> lockManager = new LockManager<>();
     private final Set<ProjectionFactory.Field> fields = new HashSet<>();
 
-    public ProjectionBuilder addField(String fieldName, Class<?> type) {
-        return addField(fieldName, type, List.of(), null);
+    public ProjectionBuilder addField(String fieldName, Type type) {
+        return addField(fieldName, type, null);
     }
 
-    public ProjectionBuilder addField(String fieldName, Class<?> type, String valueExpression) {
-        return addField(fieldName, type, List.of(), valueExpression);
-    }
-
-    public ProjectionBuilder addField(String fieldName, Class<?> type, List<Class<?>> genericTypes) {
-        return addField(fieldName, type, genericTypes, null);
-    }
-
-    public ProjectionBuilder addField(String fieldName, Class<?> type, List<Class<?>> genericTypes, String valueExpression) {
+    public ProjectionBuilder addField(String fieldName, Type type, String valueExpression) {
         validField(fieldName, type);
         valueExpression = validValueExpression(valueExpression);
 
-        if (type.getName().startsWith(ProjectionFactory.DYNAMIC_CLASS_NAME_PREFIX)) {
-            genericTypes = List.of();
-        }
+        TypeDescription.Generic generic = TypeDescription.Generic.Builder.of(type).build();
 
-        replaceField(new ProjectionFactory.Field(fieldName.trim(), type, genericTypes, valueExpression));
+        replaceField(new ProjectionFactory.Field(fieldName.trim(), generic, valueExpression));
+        return this;
+    }
+
+    public ProjectionBuilder addField(String fieldName, Class<?> rawType, List<? extends Type> paramTypes) {
+        return addField(fieldName, rawType, paramTypes, null);
+    }
+
+    public ProjectionBuilder addField(String fieldName, Class<?> rawType, List<? extends Type> paramTypes, String valueExpression) {
+        validField(fieldName, rawType);
+        valueExpression = validValueExpression(valueExpression);
+
+        TypeDescription.Generic generic = TypeDescription.Generic.Builder
+                .parameterizedType(rawType, paramTypes)
+                .build();
+
+        replaceField(new ProjectionFactory.Field(fieldName.trim(), generic, valueExpression));
         return this;
     }
 
@@ -42,9 +50,9 @@ public class ProjectionBuilder {
         for (String fieldName : fieldNames) {
             try {
                 Field reflectField = entityClass.getDeclaredField(fieldName);
-                Class<?> type = reflectField.getType();
-                List<Class<?>> genericTypes = ReflectHelper.resolveCollectionElementType(reflectField);
-                replaceField(new ProjectionFactory.Field(fieldName, type, genericTypes, null));
+                Type type = reflectField.getGenericType();
+                TypeDescription.Generic generic = TypeDescription.Generic.Builder.of(type).build();
+                replaceField(new ProjectionFactory.Field(fieldName, generic, null));
             } catch (NoSuchFieldException e) {
                 throw new RuntimeException("Field not found in entity: " + fieldName, e);
             }
@@ -100,12 +108,12 @@ public class ProjectionBuilder {
         return stringBuilder.toString();
     }
 
-    private static void validField(String fieldName, Class<?> type) {
+    private static void validField(String fieldName, Type type) {
         if (fieldName == null || fieldName.trim().isEmpty()) {
             throw new IllegalArgumentException("fieldName is empty");
         }
         if (type == null) {
-            throw new IllegalArgumentException("type is null");
+            throw new IllegalArgumentException("generic is null");
         }
     }
 
