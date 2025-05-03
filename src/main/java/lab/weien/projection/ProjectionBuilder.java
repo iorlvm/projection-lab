@@ -1,5 +1,6 @@
 package lab.weien.projection;
 
+import lab.weien.projection.utils.LockManager;
 import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.description.type.TypeDescription;
 
@@ -23,7 +24,10 @@ public class ProjectionBuilder {
     }
 
     public ProjectionBuilder(Class<?> clazz) {
+        // TODO: 目前使用其他方法繞過類別的泛形變數
+        //  實質上對於此程式用途而言建構出泛形介面也非必要, 未來有時間再做研究
         this.typeParameters = clazz.getTypeParameters();
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     public ProjectionBuilder addField(String fieldName, Type type) {

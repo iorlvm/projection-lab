@@ -1,5 +1,6 @@
 package lab.weien.projection;
 
+import lab.weien.projection.resolver.DtoResolver;
 import lombok.Getter;
 
 import java.util.Collection;

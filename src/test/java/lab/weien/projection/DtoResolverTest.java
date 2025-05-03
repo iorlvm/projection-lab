@@ -1,5 +1,6 @@
 package lab.weien.projection;
 
+import lab.weien.projection.resolver.DtoResolver;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.junit.jupiter.api.Assertions;
@@ -23,22 +24,19 @@ class DtoResolverTest {
             method[3] = projection[0].getMethod("getMap");
             method[4] = projection[0].getMethod("getMap2");
             method[5] = projection[0].getMethod("getMap3");
-            method[6] = projection[0].getMethod("getInternalList");
-            method[7] = projection[0].getMethod("getInternalList2");
+            method[6] = projection[0].getMethod("getInternal2");
+            method[7] = projection[0].getMethod("getInternal3");
         });
 
         Assertions.assertEquals(String.class, method[1].getReturnType());
 
-        // 被擦除的泛形
-        Assertions.assertEquals(Object.class, method[0].getReturnType());
+        Assertions.assertEquals(String.class, method[0].getReturnType());
         Assertions.assertEquals("java.util.Map<java.lang.String, java.lang.Object>", method[5].getGenericReturnType().toString());
         Assertions.assertEquals("java.util.List<java.lang.Object>", method[7].getGenericReturnType().toString());
 
-        // 解析成功的泛形
         Assertions.assertEquals("java.util.List<java.lang.String>", method[2].getGenericReturnType().toString());
         Assertions.assertEquals("java.util.Map<java.lang.String, java.lang.String>", method[3].getGenericReturnType().toString());
 
-        // 後方為動態類名, 無法預先斷言
         Assertions.assertTrue(method[4].getGenericReturnType().toString().startsWith("java.util.Map<java.lang.String, lab.weien.projection.dynamic.$D"));
         Assertions.assertTrue(method[6].getGenericReturnType().toString().startsWith("java.util.List<lab.weien.projection.dynamic.$D"));
     }
@@ -57,9 +55,8 @@ class DtoResolverTest {
         private Map<String, Internal> map2;
         private Map<String, Map<String, Map<String, Internal>>> map3;
 
-        // NOTE: 剩餘問題, 自定義泛型 (其實已經有點超越 DTO 可接受的程度了)
-//        private Internal2<String, String, String> internal2;
-//        private Internal2<String, String, Internal> internal3;
+        private Internal2<String, String, String> internal2;
+        private Internal2<String, String, Internal> internal3;
 
         @Data
         static class Internal {
