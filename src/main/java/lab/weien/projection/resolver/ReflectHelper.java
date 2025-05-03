@@ -8,15 +8,13 @@ public class ReflectHelper {
         //  - 掃描欄位有無 @ProjectionIgnore 標示, 有的話跳過 (true)
 
         if (!safeMode) return false;
-
-        String fieldName = field.getName();
-        return missingGetterOrSetter(clazz, fieldName);
+        return missingGetterOrSetter(clazz, field);
     }
 
-    public static boolean missingGetterOrSetter(Class<?> clazz, String fieldName) {
+    public static boolean missingGetterOrSetter(Class<?> clazz, Field field) {
         try {
-            clazz.getMethod(setterName(fieldName));
-            clazz.getMethod(getterName(fieldName));
+            clazz.getMethod(setterName(field.getName()), field.getType());
+            clazz.getMethod(getterName(field.getName()));
             return false;
         } catch (NoSuchMethodException e) {
             return true;
