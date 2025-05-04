@@ -101,6 +101,15 @@ public class ResolverVer2 implements DtoResolver.Resolver {
 
     private Type resolveType(Type genericType, Map<String, Type> typeMap) {
         switch (genericType) {
+            case Class<?> clazz when clazz.isArray(): {
+                Class<?> componentType = clazz.getComponentType();
+                Type resolvedComponentType = resolveType(componentType, typeMap);
+                return Array.newInstance(
+                        resolvedComponentType instanceof Class<?> ?
+                                (Class<?>) resolvedComponentType :
+                                Object.class,
+                        0).getClass();
+            }
             case Class<?> clazz: {
                 return doResolve(clazz);
             }

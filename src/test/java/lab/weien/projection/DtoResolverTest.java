@@ -86,7 +86,7 @@ class DtoResolverTest {
         Class<?> projection = DtoResolver.resolve(ComplexNestedDto.class);
         assertNotEquals(ComplexNestedDto.class, projection);
 
-        final Method[] methods = new Method[6];
+        final Method[] methods = new Method[9];
         assertDoesNotThrow(() -> {
             methods[0] = projection.getMethod("getId");
             methods[1] = projection.getMethod("getNestedList");
@@ -94,6 +94,9 @@ class DtoResolverTest {
             methods[3] = projection.getMethod("getDeepNestedMap");
             methods[4] = projection.getMethod("getSimpleGeneric");
             methods[5] = projection.getMethod("getMixedGeneric");
+            methods[6] = projection.getMethod("getArray1");
+            methods[7] = projection.getMethod("getArray2");
+            methods[8] = projection.getMethod("getArray3");
         });
 
         assertEquals(String.class, methods[0].getReturnType());
@@ -103,6 +106,10 @@ class DtoResolverTest {
 
         assertTrue(methods[4].getReturnType().toString().startsWith("interface " + DYNAMIC_CLASS_NAME_PREFIX));
         assertTrue(methods[5].getReturnType().toString().startsWith("interface " + DYNAMIC_CLASS_NAME_PREFIX));
+
+        assertTrue(methods[6].getReturnType().toString().startsWith("class [Ljava.lang.String"));
+        assertTrue(methods[7].getReturnType().toString().startsWith("class [L" + DYNAMIC_CLASS_NAME_PREFIX));
+        assertTrue(methods[8].getReturnType().toString().startsWith("class [L" + DYNAMIC_CLASS_NAME_PREFIX));
     }
 
     static class BaseEntity<ID> {
@@ -118,6 +125,10 @@ class DtoResolverTest {
         private TripleGeneric<String, String, String> simpleGeneric;
         private TripleGeneric<String, SimpleNested, TripleGeneric<String, String, String>> mixedGeneric;
 
+        private String[] array1;
+        private SimpleNested[] array2;
+        private TripleGeneric<String, String, String>[] array3;
+
         static class SimpleNested {
             private String prop;
         }
@@ -126,6 +137,10 @@ class DtoResolverTest {
             private A prop1;
             private B prop2;
             private C prop3;
+
+            private A[] array;
+            private List<B> list;
+            private Map<String, C> map;
         }
     }
 }
