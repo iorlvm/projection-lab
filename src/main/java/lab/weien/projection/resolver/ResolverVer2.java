@@ -3,7 +3,6 @@ package lab.weien.projection.resolver;
 import lab.weien.projection.ProjectionBuilder;
 import lab.weien.projection.utils.LockManager;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -12,7 +11,6 @@ import java.util.stream.Stream;
 
 import static lab.weien.projection.resolver.ReflectHelper.*;
 
-@Slf4j
 public class ResolverVer2 implements DtoResolver.Resolver {
     private static final Map<TypesKey, Class<?>> CACHE = new ConcurrentHashMap<>();
     private static final LockManager<TypesKey> lockManager = new LockManager<>();

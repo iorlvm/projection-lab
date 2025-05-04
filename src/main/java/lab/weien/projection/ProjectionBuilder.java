@@ -1,7 +1,7 @@
 package lab.weien.projection;
 
 import lab.weien.projection.utils.LockManager;
-import lombok.extern.slf4j.Slf4j;
+import lab.weien.projection.utils.LoggerWrapper;
 import net.bytebuddy.description.type.TypeDescription;
 
 import java.lang.reflect.Field;
@@ -11,8 +11,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Slf4j
 public class ProjectionBuilder {
+    private static final LoggerWrapper log = new LoggerWrapper(ProjectionBuilder.class, "[ProjectionBuilder] ");
+
     private static final String VALUE_EXPRESSION_PATTERN = "^(target(\\.[a-zA-Z][a-zA-Z0-9_]*)+)(\\s*([+\\-*/])\\s*target(\\.[a-zA-Z][a-zA-Z0-9_]*)+)*$";
     private static final LockManager<String> lockManager = new LockManager<>();
 

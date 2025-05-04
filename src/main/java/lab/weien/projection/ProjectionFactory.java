@@ -1,6 +1,6 @@
 package lab.weien.projection;
 
-import lombok.extern.slf4j.Slf4j;
+import lab.weien.projection.utils.LoggerWrapper;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.annotation.AnnotationDescription;
 import net.bytebuddy.description.modifier.Visibility;
@@ -13,8 +13,8 @@ import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Objects;
 
-@Slf4j
 public class ProjectionFactory {
+    private static final LoggerWrapper log = new LoggerWrapper(ProjectionFactory.class, "[ProjectionFactory] ");
     public static final String DYNAMIC_CLASS_NAME_PREFIX = "lab.weien.projection.dynamic.$D";
 
     static Class<?> create(TypeVariable<? extends Class<?>>[] typeParameters, List<Field> fields, String hash) {

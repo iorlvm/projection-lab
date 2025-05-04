@@ -1,10 +1,7 @@
 package lab.weien.projection.resolver;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.lang.reflect.Type;
 
-@Slf4j
 public class DtoResolver {
     private static final Resolver INSTANCE = new ResolverVer2();
 
