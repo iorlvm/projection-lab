@@ -1,5 +1,6 @@
 package lab.weien.model.dto;
 
+import lab.weien.projection.annotation.ProjectionDto;
 import lab.weien.projection.annotation.ProjectionIgnore;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.util.List;
 
 @Data
+@ProjectionDto
 public class OrderDto {
     private String id;
 
