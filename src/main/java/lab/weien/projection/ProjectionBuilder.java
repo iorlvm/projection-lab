@@ -105,6 +105,11 @@ public class ProjectionBuilder {
         return res;
     }
 
+    public boolean contains(String fieldName) {
+        ProjectionFactory.Field field = new ProjectionFactory.Field(fieldName, null, null);
+        return fields.contains(field);
+    }
+
     @Override
     public String toString() {
         if (fields.isEmpty()) {

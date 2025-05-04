@@ -19,24 +19,16 @@ public class Controller {
     @GetMapping("/test")
     public List<?> test() {
         ClassWrapper<OrderDto> wrapper = new ClassWrapper<>(OrderDto.class);
-        return orderRepo.findAllBy(wrapper.getProjection());
 
-        /*
-        Class<?> itemProjection = new ProjectionBuilder()
-                .fromEntity(OrderItemEntity.class, "count")
-                .addField("name", String.class, "target.product.name")
-                .addField("price", Long.class, "target.product.price")
-                .addField("totalPrice", Long.class, "target.product.price * target.count")
-                .build();
-        Class<?> orderProjection = new ProjectionBuilder()
-                .fromEntity(OrderEntity.class, "id", "userId")
-                .addField("orderList", List.class, itemProjection, "target.items")
-                .build();
-        return orderRepo.findAllBy(orderProjection);
-        */
+        List<?> allBy = orderRepo.findAllBy(wrapper.getProjection());
 
-        // return orderRepo.findAllBy(OrderEntity.class);
-        // return orderRepo.findAllBy(OrderLite.class);
-        // return orderRepo.findAllBy(OrderLiteUseValue.class);
+        List<OrderDto> convert = wrapper.convert(allBy);
+
+        convert.forEach(orderDto -> {
+            // 不會被 @JsonIgnore 影響
+            System.out.println(orderDto.getUserId());
+        });
+
+        return convert;
     }
 }

@@ -67,6 +67,12 @@
             <artifactId>byte-buddy</artifactId>
             <version>1.14.7</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>3.2.0</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -1,7 +1,7 @@
 package lab.weien.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lab.weien.projection.annotation.ProjectionDto;
-import lab.weien.projection.annotation.ProjectionIgnore;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -12,7 +12,7 @@ import java.util.List;
 public class OrderDto {
     private String id;
 
-    @ProjectionIgnore
+    @JsonIgnore
     private String userId;
 
     private List<OrderDto.OrderItemDto> items;

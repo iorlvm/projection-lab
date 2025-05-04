@@ -49,7 +49,10 @@ public class ResolverVer2 implements DtoResolver.Resolver {
 
             ProjectionBuilder builder = new ProjectionBuilder();
             for (FieldContainer field : fields) {
-                builder.addField(field.fieldName(), field.genericType(), field.valueExpression());
+                String fieldName = field.fieldName();
+                if (builder.contains(fieldName)) continue;
+
+                builder.addField(fieldName, field.genericType(), field.valueExpression());
             }
             result = builder.build();
 
