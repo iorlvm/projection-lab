@@ -1,11 +1,16 @@
 package lab.weien.projection.resolver;
 
+import jakarta.persistence.Entity;
+import lab.weien.projection.annotation.ProjectionIgnore;
+import org.springframework.beans.factory.annotation.Value;
+
 import java.lang.reflect.Field;
 
 public class ReflectHelper {
     public static boolean skipField(Class<?> clazz, Field field, boolean safeMode) {
-        // TODO: 未來擴充
-        //  - 掃描欄位有無 @ProjectionIgnore 標示, 有的話跳過 (true)
+        if (field.isAnnotationPresent(ProjectionIgnore.class)) {
+            return true;
+        }
 
         if (!safeMode) return false;
         return missingGetterOrSetter(clazz, field);
@@ -30,8 +35,9 @@ public class ReflectHelper {
     }
 
     public static boolean skipResolving(Class<?> clazz) {
-        // TODO: 未來擴充
-        //  - 掃描類別有無 @Entity 標示, 有的話跳過 (true)
+        if (clazz.isAnnotationPresent(Entity.class)) {
+            return true;
+        }
 
         return clazz.isInterface() ||
                 clazz.getName().startsWith("java") ||
@@ -39,8 +45,15 @@ public class ReflectHelper {
     }
 
     public static String getFieldValueExpression(Field field) {
-        // TODO: 其他擴充
-        //  - 掃描欄位 @Value("#{valueExpression}"), 取得 valueExpression
-        return null;
+        if (!field.isAnnotationPresent(Value.class)) return null;
+
+        Value fieldAnnotation = field.getAnnotation(Value.class);
+        String value = fieldAnnotation != null ? fieldAnnotation.value().trim() : "";
+
+        if (value.startsWith("#{") && value.endsWith("}")) {
+            return value.substring(2, value.length() - 1);
+        } else {
+            return null;
+        }
     }
 }
