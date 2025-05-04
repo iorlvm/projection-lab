@@ -1,5 +1,7 @@
 package lab.weien.projection;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lab.weien.projection.resolver.DtoResolver;
 import lombok.Getter;
 import lombok.Setter;
@@ -77,6 +79,20 @@ class DtoResolverTest {
         private String prop3;
 
         private String prop4;
+    }
+
+    @Test
+    void should_ResolveEntity_Skip() {
+        DtoResolver.changeMode(DtoResolver.Mode.DEFAULT);
+        Class<?> projection = DtoResolver.resolve(TestEntity.class);
+        assertEquals(TestEntity.class, projection); // Non change
+    }
+
+    @Entity
+    static class TestEntity {
+        @Id
+        public String id;
+        private String prop1;
     }
 
     @Test
